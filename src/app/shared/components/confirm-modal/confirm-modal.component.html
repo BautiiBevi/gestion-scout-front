@@ -1,0 +1,12 @@
+<dialog [id]="modalId" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box border-t-4 border-error">
+    <h3 class="font-bold text-lg">{{ titulo }}</h3>
+    <p class="py-4" [innerHTML]="mensaje"></p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-error ml-2" (click)="confirmar.emit()">{{ textoBoton }}</button>
+      </form>
+    </div>
+  </div>
+</dialog>

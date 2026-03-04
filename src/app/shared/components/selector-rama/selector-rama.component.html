@@ -1,0 +1,34 @@
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+  <button
+    type="button"
+    class="btn btn-warning"
+    [class.btn-outline]="ramaActual !== 'Manada'"
+    (click)="seleccionarRama('Manada')"
+  >
+    Manada
+  </button>
+  <button
+    type="button"
+    class="btn btn-success"
+    [class.btn-outline]="ramaActual !== 'Unidad'"
+    (click)="seleccionarRama('Unidad')"
+  >
+    Unidad
+  </button>
+  <button
+    type="button"
+    class="btn btn-info"
+    [class.btn-outline]="ramaActual !== 'Caminantes'"
+    (click)="seleccionarRama('Caminantes')"
+  >
+    Caminantes
+  </button>
+  <button
+    type="button"
+    class="btn btn-error"
+    [class.btn-outline]="ramaActual !== 'Rovers'"
+    (click)="seleccionarRama('Rovers')"
+  >
+    Rovers
+  </button>
+</div>

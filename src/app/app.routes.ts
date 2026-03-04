@@ -7,6 +7,11 @@ export const routes: Routes = [
       import('./features/beneficiarios/beneficiarios.routes').then((m) => m.BENEFICIARIOS_ROUTES),
   },
   {
+    path: 'familias',
+    loadChildren: () =>
+      import('./features/familias/familias.routes').then((m) => m.FAMILIAS_ROUTES),
+  },
+  {
     path: '',
     redirectTo: 'beneficiarios', // Por ahora, si entran a la raíz, los mandamos acá
     pathMatch: 'full',

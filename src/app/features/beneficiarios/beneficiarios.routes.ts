@@ -12,7 +12,7 @@ export const BENEFICIARIOS_ROUTES: Routes = [
   {
     path: 'nuevo', // Ruta: /beneficiarios/nuevo
     loadComponent: () =>
-      import('./pages/beneficiario-form/beneficiario-form.component').then(
+      import('./pages/beneficiario-page/beneficiario-page.component').then(
         (m) => m.BeneficiarioFormComponent,
       ),
     title: 'Nuevo Beneficiario',
@@ -20,7 +20,7 @@ export const BENEFICIARIOS_ROUTES: Routes = [
   {
     path: 'editar/:id', // <--- NUEVA RUTA CON PARÁMETRO
     loadComponent: () =>
-      import('./pages/beneficiario-form/beneficiario-form.component').then(
+      import('./pages/beneficiario-page/beneficiario-page.component').then(
         (m) => m.BeneficiarioFormComponent,
       ),
     title: 'Editar Beneficiario',

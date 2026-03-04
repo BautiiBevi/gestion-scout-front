@@ -1,0 +1,28 @@
+<div class="p-6 md:p-10 bg-base-200 min-h-screen">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-base-content">
+        {{ beneficiarioId ? 'Editar Beneficiario' : 'Nuevo Beneficiario' }}
+      </h1>
+      <button routerLink="/beneficiarios" class="btn btn-ghost">Volver</button>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <app-alert-error [mensaje]="errorMsg()" (cerrar)="errorMsg.set(null)"></app-alert-error>
+
+        @if (cargando()) {
+          <app-loading-spinner texto="Procesando datos del scout..."></app-loading-spinner>
+        } @else {
+          <app-formulario-beneficiario
+            [beneficiarioInicial]="scoutPrecargado()"
+            [familiaPrecargada]="familiaPrecargada()"
+            [esEdicion]="!!beneficiarioId"
+            (onSubmit)="procesarGuardado($event)"
+          >
+          </app-formulario-beneficiario>
+        }
+      </div>
+    </div>
+  </div>
+</div>

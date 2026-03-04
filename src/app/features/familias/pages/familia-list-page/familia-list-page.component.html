@@ -1,0 +1,36 @@
+<div class="p-6 md:p-10 bg-base-200 min-h-screen relative">
+  <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <h1 class="text-3xl font-bold text-base-content">Nómina de Familias</h1>
+    <div class="flex gap-2">
+      <button class="btn btn-ghost" (click)="cargarFamilias(true)">↻ Refrescar</button>
+      <button routerLink="/familias/nueva" class="btn btn-primary">Nueva Familia</button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <app-loading-spinner texto="Cargando familias..."></app-loading-spinner>
+  } @else if (errorMsg()) {
+    <div class="flex flex-col gap-4">
+      <app-alert-error [mensaje]="errorMsg()" (cerrar)="errorMsg.set(null)"></app-alert-error>
+      <button class="btn btn-outline self-center" (click)="cargarFamilias(true)">
+        Reintentar carga
+      </button>
+    </div>
+  } @else {
+    <app-tabla-familias [familias]="familias()" (onEliminar)="prepararBorrado($event)">
+    </app-tabla-familias>
+  }
+
+  <app-confirm-modal
+    modalId="modal_confirmar_borrado"
+    titulo="¿Confirmar eliminación?"
+    [mensaje]="
+      'Estás por borrar a la familia <strong>' +
+      familiaSeleccionada()?.apellido_familia +
+      '</strong>. Esta acción es permanente.'
+    "
+    textoBoton="Eliminar definitivamente"
+    (confirmar)="confirmarBorrado()"
+  >
+  </app-confirm-modal>
+</div>

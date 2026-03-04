@@ -1,0 +1,27 @@
+<div class="p-6 md:p-10 bg-base-200 min-h-screen">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-base-content">
+        {{ familiaId ? 'Editar Familia' : 'Nueva Familia' }}
+      </h1>
+      <button routerLink="/familias" class="btn btn-ghost">Volver</button>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <app-alert-error [mensaje]="errorMsg()" (cerrar)="errorMsg.set(null)"></app-alert-error>
+
+        @if (cargando()) {
+          <app-loading-spinner texto="Procesando datos de la familia..."></app-loading-spinner>
+        } @else {
+          <app-familia-form
+            [familiaInicial]="familiaPrecargada()"
+            [esEdicion]="!!familiaId"
+            (onSubmit)="procesarGuardado($event)"
+          >
+          </app-familia-form>
+        }
+      </div>
+    </div>
+  </div>
+</div>
