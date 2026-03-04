@@ -1,0 +1,54 @@
+<div class="card bg-base-100 shadow-xl overflow-x-auto">
+  <table class="table table-zebra w-full">
+    <thead class="bg-base-300 text-base-content">
+      <tr>
+        <th>Apellido Familia</th>
+        <th>Padres</th>
+        <th>Contactos</th>
+        <th>Email</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (f of familias; track f.id_familia) {
+        <tr class="hover">
+          <td class="font-bold">{{ f.apellido_familia }}</td>
+          <td>
+            <div class="text-sm">👨 {{ f.nombre_padre || '-' }}</div>
+            <div class="text-sm">👩 {{ f.nombre_madre || '-' }}</div>
+          </td>
+          <td>
+            <div class="flex flex-col gap-1">
+              <div class="badge badge-ghost badge-sm py-3">📞 {{ f.telefono_padre || '-' }}</div>
+              <div class="badge badge-ghost badge-sm py-3">📞 {{ f.telefono_madre || '-' }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-2 text-sm opacity-80 italic">
+              {{ f.email || 'Sin correo' }}
+            </div>
+          </td>
+          <td class="text-center">
+            <div class="flex justify-center gap-2">
+              <button
+                [routerLink]="['/familias/editar', f.id_familia]"
+                class="btn btn-sm btn-outline btn-primary"
+              >
+                Editar
+              </button>
+              <button class="btn btn-sm btn-outline btn-error" (click)="eliminar(f)">
+                Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="text-center py-8 text-base-content/50">
+            No hay familias registradas.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

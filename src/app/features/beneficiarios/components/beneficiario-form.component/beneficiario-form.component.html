@@ -1,0 +1,84 @@
+<div class="flex flex-col gap-4">
+  <app-buscador-familia
+    [familiaInicial]="familiaPrecargada"
+    [mostrarError]="
+      (beneficiarioForm.get('id_familia')?.invalid &&
+        beneficiarioForm.get('id_familia')?.touched) ??
+      false
+    "
+    (familiaSeleccionadaEmit)="actualizarFamilia($event)"
+  >
+  </app-buscador-familia>
+
+  <div class="divider">Datos Personales del Scout</div>
+
+  <form
+    [formGroup]="beneficiarioForm"
+    (ngSubmit)="guardar()"
+    class="grid grid-cols-1 md:grid-cols-2 gap-4"
+  >
+    <label class="form-control w-full">
+      <div class="label"><span class="label-text font-medium">Nombre</span></div>
+      <input
+        type="text"
+        formControlName="nombre"
+        class="input input-bordered w-full"
+        [class.input-error]="
+          beneficiarioForm.get('nombre')?.invalid && beneficiarioForm.get('nombre')?.touched
+        "
+      />
+    </label>
+
+    <label class="form-control w-full">
+      <div class="label"><span class="label-text font-medium">Apellido</span></div>
+      <input
+        type="text"
+        formControlName="apellido"
+        class="input input-bordered w-full"
+        [class.input-error]="
+          beneficiarioForm.get('apellido')?.invalid && beneficiarioForm.get('apellido')?.touched
+        "
+      />
+    </label>
+
+    <label class="form-control w-full">
+      <div class="label"><span class="label-text font-medium">DNI</span></div>
+      <input
+        type="text"
+        formControlName="dni"
+        class="input input-bordered w-full"
+        [class.input-error]="
+          beneficiarioForm.get('dni')?.invalid && beneficiarioForm.get('dni')?.touched
+        "
+      />
+    </label>
+
+    <label class="form-control w-full">
+      <div class="label"><span class="label-text font-medium">Fecha de Nacimiento</span></div>
+      <input
+        type="date"
+        formControlName="fecha_nacimiento"
+        class="input input-bordered w-full"
+        [class.input-error]="
+          beneficiarioForm.get('fecha_nacimiento')?.invalid &&
+          beneficiarioForm.get('fecha_nacimiento')?.touched
+        "
+      />
+    </label>
+
+    <div class="form-control w-full md:col-span-2">
+      <div class="label"><span class="label-text font-medium">Rama Actual</span></div>
+      <app-selector-rama
+        [ramaActual]="beneficiarioForm.get('rama_actual')?.value || 'Manada'"
+        (ramaSeleccionada)="actualizarRama($event)"
+      >
+      </app-selector-rama>
+    </div>
+
+    <div class="mt-8 flex justify-end md:col-span-2">
+      <button type="submit" class="btn btn-primary w-full md:w-auto px-12">
+        {{ esEdicion ? 'Guardar Cambios' : 'Crear Beneficiario' }}
+      </button>
+    </div>
+  </form>
+</div>

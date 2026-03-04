@@ -1,0 +1,85 @@
+<div #searchContainer class="flex flex-col gap-4">
+  <div class="form-control w-full">
+    <label class="label">
+      <span class="label-text font-bold text-lg">Familia / Responsables</span>
+    </label>
+
+    <div class="join w-full shadow-sm">
+      <input
+        type="text"
+        [formControl]="buscadorFamilia"
+        placeholder="Buscá por apellido (ej: Bevilacqua)..."
+        class="input input-bordered w-full join-item focus:input-primary transition-all"
+        [class.input-error]="mostrarError"
+        (focus)="mostrarResultados.set(true)"
+        autocomplete="off"
+      />
+    </div>
+  </div>
+
+  @if (mostrarResultados() && buscadorFamilia.value) {
+    <div class="grid grid-cols-1 gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+      @if (buscandoFamilias()) {
+        <div class="p-4 text-center bg-base-200 rounded-lg italic opacity-70">
+          Buscando en la base de datos...
+        </div>
+      }
+
+      @for (f of familiasEncontradas(); track f.id_familia) {
+        <div
+          (click)="seleccionarFamilia(f)"
+          class="flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5"
+          [class.border-primary]="f.id_familia === familiaSeleccionada()?.id_familia"
+        >
+          <div class="flex flex-col">
+            <span class="font-bold text-lg">{{ f.apellido_familia }}</span>
+            <span class="text-sm opacity-70"
+              >👨 {{ f.nombre_padre || '?' }} | 👩 {{ f.nombre_madre || '?' }}</span
+            >
+          </div>
+          @if (f.id_familia === familiaSeleccionada()?.id_familia) {
+            <div class="badge badge-primary">Seleccionada</div>
+          }
+        </div>
+      }
+
+      @if (
+        !buscandoFamilias() &&
+        familiasEncontradas().length === 0 &&
+        buscadorFamilia.value!.length >= 2
+      ) {
+        <div class="p-4 text-center border-2 border-dashed border-error/30 rounded-xl bg-error/5">
+          <p class="text-error font-medium">No encontramos ninguna familia con ese apellido</p>
+          <button
+            type="button"
+            routerLink="/familias/nueva"
+            class="btn btn-xs btn-outline btn-error mt-2"
+          >
+            Registrar Nueva Familia
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (familiaSeleccionada() && !mostrarResultados()) {
+    <div class="stats shadow bg-primary text-primary-content">
+      <div class="stat relative">
+        <button
+          class="btn btn-xs btn-circle btn-ghost absolute right-2 top-2"
+          (click)="limpiarSeleccion()"
+        >
+          ✕
+        </button>
+        <div class="text-green-500 font-bold">Familia Vinculada</div>
+        <div class="stat-value text-2xl">{{ familiaSeleccionada()?.apellido_familia }}</div>
+      </div>
+    </div>
+  }
+
+  @if (mostrarError && !familiaSeleccionada()) {
+    <div class="alert alert-error py-2 text-sm shadow-sm">
+      <span>⚠️ Debes seleccionar una familia de los recuadros.</span>
+    </div>
+  }
+</div>

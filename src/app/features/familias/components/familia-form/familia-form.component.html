@@ -1,1 +1,95 @@
-<p>familia-form.component works!</p>,
+<form [formGroup]="familiaForm" (ngSubmit)="guardar()">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="form-control flex flex-col gap-2 w-full md:col-span-2">
+      <label class="label"
+        ><span class="label-text font-bold text-lg">Nombre/Apellido de la Familia</span></label
+      >
+      <input
+        type="text"
+        formControlName="apellido_familia"
+        placeholder="Ej: Bevilacqua-Verna"
+        class="input input-bordered w-full"
+        [class.input-error]="
+          familiaForm.get('apellido_familia')?.invalid &&
+          familiaForm.get('apellido_familia')?.touched
+        "
+      />
+    </div>
+
+    <div class="divider md:col-span-2">Datos de los Padres</div>
+
+    <div class="form-control flex flex-col gap-2">
+      <label class="label"><span class="label-text">Nombre del Padre</span></label>
+      <input
+        type="text"
+        formControlName="nombre_padre"
+        class="input input-bordered"
+        [class.input-error]="
+          familiaForm.get('nombre_padre')?.invalid && familiaForm.get('nombre_padre')?.touched
+        "
+      />
+
+      <label class="label"><span class="label-text">Teléfono Padre</span></label>
+      <input
+        type="text"
+        formControlName="telefono_padre"
+        class="input input-bordered"
+        [class.input-error]="
+          familiaForm.get('telefono_padre')?.invalid && familiaForm.get('telefono_padre')?.touched
+        "
+      />
+    </div>
+
+    <div class="form-control flex flex-col gap-2">
+      <label class="label"><span class="label-text">Nombre de la Madre</span></label>
+      <input
+        type="text"
+        formControlName="nombre_madre"
+        class="input input-bordered"
+        [class.input-error]="
+          familiaForm.get('nombre_madre')?.invalid && familiaForm.get('nombre_madre')?.touched
+        "
+      />
+
+      <label class="label"><span class="label-text">Teléfono Madre</span></label>
+      <input
+        type="text"
+        formControlName="telefono_madre"
+        class="input input-bordered"
+        [class.input-error]="
+          familiaForm.get('telefono_madre')?.invalid && familiaForm.get('telefono_madre')?.touched
+        "
+      />
+    </div>
+
+    <div class="divider md:col-span-2">Contacto General</div>
+
+    <div class="form-control flex flex-col gap-2">
+      <label class="label"><span class="label-text">Email de la Familia</span></label>
+      <input
+        type="email"
+        formControlName="email"
+        class="input input-bordered"
+        [class.input-error]="familiaForm.get('email')?.invalid && familiaForm.get('email')?.touched"
+      />
+    </div>
+
+    <div class="form-control flex flex-col gap-2">
+      <label class="label"><span class="label-text">Dirección</span></label>
+      <input
+        type="text"
+        formControlName="direccion"
+        class="input input-bordered"
+        [class.input-error]="
+          familiaForm.get('direccion')?.invalid && familiaForm.get('direccion')?.touched
+        "
+      />
+    </div>
+  </div>
+
+  <div class="mt-10 flex justify-end">
+    <button type="submit" class="btn btn-primary w-full md:w-auto px-10">
+      {{ esEdicion ? 'Actualizar Datos' : 'Registrar Familia' }}
+    </button>
+  </div>
+</form>

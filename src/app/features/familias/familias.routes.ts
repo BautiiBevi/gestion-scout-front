@@ -4,7 +4,7 @@ export const FAMILIAS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./components/familia-list/familia-list.component').then(
+      import('./pages/familia-list-page/familia-list-page.component').then(
         (m) => m.FamiliaListComponent,
       ),
     title: 'Nómina de Familias',
@@ -12,16 +12,16 @@ export const FAMILIAS_ROUTES: Routes = [
   {
     path: 'nueva',
     loadComponent: () =>
-      import('./components/familia-form/familia-form.component').then(
-        (m) => m.FamiliaFormComponent,
+      import('./pages/familia-page/familia-page.component').then(
+        (m) => m.FamiliaPageComponent,
       ),
     title: 'Nueva Familia',
   },
   {
     path: 'editar/:id',
     loadComponent: () =>
-      import('./components/familia-form/familia-form.component').then(
-        (m) => m.FamiliaFormComponent,
+      import('./pages/familia-page/familia-page.component').then(
+        (m) => m.FamiliaPageComponent,
       ),
     title: 'Editar Familia',
   },

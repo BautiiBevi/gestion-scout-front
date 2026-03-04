@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { Familia } from '../../models/familia.model';
 
 @Injectable({
@@ -10,9 +10,25 @@ export class FamiliaService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/familias';
 
-  // GET con buscador opcional
-  getFamilias(query: string = ''): Observable<Familia[]> {
-    return this.http.get<Familia[]>(`${this.apiUrl}?q=${query}`);
+  private cacheFamilias = signal<Familia[] | null>(null);
+
+  getFamilias(termino?: string, forzarRecarga: boolean = false): Observable<Familia[]> {
+    if (termino && termino.length >= 2) {
+      return this.http.get<Familia[]>(`${this.apiUrl}?q=${termino}`);
+    }
+
+    const cacheActual = this.cacheFamilias();
+    if (cacheActual && !forzarRecarga) {
+      return of(cacheActual);
+    }
+
+    return this.http
+      .get<Familia[]>(this.apiUrl)
+      .pipe(tap((datos) => this.cacheFamilias.set(datos)));
+  }
+
+  limpiarCache() {
+    this.cacheFamilias.set(null);
   }
 
   getFamiliaById(id: number): Observable<Familia> {
@@ -20,14 +36,16 @@ export class FamiliaService {
   }
 
   createFamilia(familia: Familia): Observable<Familia> {
-    return this.http.post<Familia>(this.apiUrl, familia);
+    return this.http.post<Familia>(this.apiUrl, familia).pipe(tap(() => this.limpiarCache()));
   }
 
   updateFamilia(id: number, familia: Partial<Familia>): Observable<Familia> {
-    return this.http.put<Familia>(`${this.apiUrl}/${id}`, familia);
+    return this.http
+      .put<Familia>(`${this.apiUrl}/${id}`, familia)
+      .pipe(tap(() => this.limpiarCache()));
   }
 
   deleteFamilia(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(tap(() => this.limpiarCache()));
   }
 }
