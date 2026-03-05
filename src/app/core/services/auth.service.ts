@@ -11,6 +11,7 @@ export interface UsuarioLogueado {
   apellido: string;
   rol: RolUsuario;
   token?: string;
+  debe_cambiar_password?: boolean;
 }
 
 @Injectable({
@@ -52,5 +53,21 @@ export class AuthService {
     if (sesion) {
       this.usuarioActual.set(JSON.parse(sesion));
     }
+  }
+
+  cambiarPassword(nuevaPassword: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/cambiar-password`, { nuevaPassword }).pipe(
+      tap(() => {
+        // Si salió bien, actualizamos la señal para sacarle la marca y lo guardamos en el localStorage
+        const user = this.usuarioActual();
+        if (user) {
+          const userActualizado = { ...user, debe_cambiar_password: false };
+          this.usuarioActual.set(userActualizado);
+          localStorage.setItem('scout_session', JSON.stringify(userActualizado));
+        }
+      }),
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 }

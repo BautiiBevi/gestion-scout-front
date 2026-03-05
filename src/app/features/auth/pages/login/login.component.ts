@@ -17,6 +17,7 @@ export class LoginComponent {
 
   // Señal para mostrar un cartel rojo si le pifia a la contraseña
   public errorMsg = signal<string | null>(null);
+  public cargando = signal<boolean>(false);
 
   // Armamos el formulario con sus validaciones
   public loginForm = this.fb.group({
@@ -27,20 +28,28 @@ export class LoginComponent {
   ingresar() {
     if (this.loginForm.invalid) return;
 
+    this.cargando.set(true);
+    this.errorMsg.set(null);
+
     const { email, password } = this.loginForm.value;
 
-    // Llamamos a tu servicio real (el que armamos en el mensaje anterior)
     this.authService.login(email!, password!).subscribe({
       next: (exito) => {
         if (exito) {
-          // Si el token llegó bien, lo mandamos al sistema
-          this.router.navigate(['/beneficiarios']);
+          const user = this.authService.usuarioActual();
+          if (user?.debe_cambiar_password) {
+            this.router.navigate(['/cambiar-password']);
+          } else {
+            this.router.navigate(['/beneficiarios']);
+          }
         } else {
           this.errorMsg.set('Credenciales incorrectas. Verificá tu email y contraseña.');
+          this.cargando.set(false);
         }
       },
       error: () => {
         this.errorMsg.set('Error al conectarse con el servidor.');
+        this.cargando.set(false);
       },
     });
   }
