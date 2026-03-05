@@ -1,30 +1,32 @@
 import { Routes } from '@angular/router';
 
-export const BENEFICIARIOS_ROUTES: Routes = [
+export const beneficiariosRoutes: Routes = [
   {
-    path: '', // Esto equivale a /beneficiarios
+    path: '', // Es la ruta base de beneficiarios (equivale a /beneficiarios)
     loadComponent: () =>
       import('./pages/beneficiario-list/beneficiario-list.component').then(
         (m) => m.BeneficiarioListComponent,
       ),
-    title: 'Lista de Beneficiarios', // Angular cambia el título de la pestaña automáticamente!
   },
   {
-    path: 'nuevo', // Ruta: /beneficiarios/nuevo
+    path: 'rama/:rama', // <-- NUEVA RUTA DINÁMICA
+    loadComponent: () =>
+      import('./pages/beneficiario-list/beneficiario-list.component').then(
+        (m) => m.BeneficiarioListComponent,
+      ),
+  },
+  {
+    path: 'nuevo', // Equivale a /beneficiarios/nuevo
     loadComponent: () =>
       import('./pages/beneficiario-page/beneficiario-page.component').then(
         (m) => m.BeneficiarioFormComponent,
       ),
-    title: 'Nuevo Beneficiario',
   },
   {
-    path: 'editar/:id', // <--- NUEVA RUTA CON PARÁMETRO
+    path: 'editar/:id', // Equivale a /beneficiarios/editar/:id
     loadComponent: () =>
       import('./pages/beneficiario-page/beneficiario-page.component').then(
         (m) => m.BeneficiarioFormComponent,
       ),
-    title: 'Editar Beneficiario',
   },
-  // En el futuro, acá vas a agregar:
-  // { path: 'nuevo', loadComponent: () => import('./pages/beneficiario-form/beneficiario-form.component').then(...) }
 ];

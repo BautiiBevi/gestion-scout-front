@@ -1,28 +1,21 @@
 import { Routes } from '@angular/router';
 
-export const FAMILIAS_ROUTES: Routes = [
+export const familiasRoutes: Routes = [
   {
-    path: '',
+    path: '', // Equivale a /familias
     loadComponent: () =>
       import('./pages/familia-list-page/familia-list-page.component').then(
         (m) => m.FamiliaListComponent,
       ),
-    title: 'Nómina de Familias',
   },
   {
-    path: 'nueva',
+    path: 'nueva', // Equivale a /familias/nueva
     loadComponent: () =>
-      import('./pages/familia-page/familia-page.component').then(
-        (m) => m.FamiliaPageComponent,
-      ),
-    title: 'Nueva Familia',
+      import('./pages/familia-page/familia-page.component').then((m) => m.FamiliaPageComponent),
   },
   {
-    path: 'editar/:id',
+    path: 'editar/:id', // Equivale a /familias/editar/:id
     loadComponent: () =>
-      import('./pages/familia-page/familia-page.component').then(
-        (m) => m.FamiliaPageComponent,
-      ),
-    title: 'Editar Familia',
+      import('./pages/familia-page/familia-page.component').then((m) => m.FamiliaPageComponent),
   },
 ];
