@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { BeneficiarioService } from '../../../../core/services/beneficiario.service';
 import { Beneficiario } from '../../../../models/beneficiario.model';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { AlertErrorComponent } from '../../../../shared/components/alert-error/alert-error.component';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner.component/loading-spinner.component';
@@ -21,14 +21,26 @@ import { BeneficiariosTableComponent } from '../../components/beneficiarios-tabl
 })
 export class BeneficiarioListComponent implements OnInit {
   private beneficiarioService = inject(BeneficiarioService);
+  private route = inject(ActivatedRoute);
 
   public beneficiarios = signal<Beneficiario[]>([]);
   public beneficiarioSeleccionado = signal<any>(null);
   public cargando = signal<boolean>(true);
   public error = signal<string | null>(null);
+  public ramaSeleccionada = signal<string | null>(null);
 
-  ngOnInit(): void {
-    this.cargarBeneficiarios();
+  public beneficiariosFiltrados = computed(() => {
+    const listaCompleta = this.beneficiarios();
+    const rama = this.ramaSeleccionada();
+    if (!rama) return listaCompleta;
+    return listaCompleta.filter((b) => b.rama_actual?.toLowerCase() === rama.toLowerCase());
+  });
+
+  ngOnInit() {
+    this.route.paramMap.subscribe((params) => {
+      this.ramaSeleccionada.set(params.get('rama'));
+      this.cargarBeneficiarios(); // Pedimos los datos (que vendrán del caché si ya los tenemos)
+    });
   }
 
   cargarBeneficiarios(forzarRecarga: boolean = false) {
