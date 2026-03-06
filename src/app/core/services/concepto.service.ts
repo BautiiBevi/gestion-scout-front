@@ -39,4 +39,14 @@ export class ConceptoService {
   asignarConcepto(idConcepto: number): Observable<{ mensaje: string; cantidad: number }> {
     return this.http.post<any>(`${this.apiUrl}/${idConcepto}/asignar`, {});
   }
+
+  getConceptosDisponibles(idBeneficiario: number): Observable<ConceptoCobro[]> {
+    return this.http.get<ConceptoCobro[]>(`${this.apiUrl}/disponibles/${idBeneficiario}`);
+  }
+
+  crearCuotasMasivas(data: any): Observable<ConceptoCobro[]> {
+    return this.http
+      .post<ConceptoCobro[]>(`${this.apiUrl}/masivo`, data)
+      .pipe(tap(() => this.limpiarCache()));
+  }
 }

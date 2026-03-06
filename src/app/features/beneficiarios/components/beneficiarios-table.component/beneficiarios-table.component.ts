@@ -15,6 +15,11 @@ export class BeneficiariosTableComponent {
 
   // Emite un evento cuando tocan "Eliminar" pasándole el scout
   @Output() onEliminar = new EventEmitter<Beneficiario>();
+  @Output() onAbrirCajero = new EventEmitter<Beneficiario>();
+
+  abrirCajero(b: Beneficiario) {
+    this.onAbrirCajero.emit(b);
+  }
 
   eliminar(b: Beneficiario) {
     this.onEliminar.emit(b);

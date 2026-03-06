@@ -7,6 +7,7 @@ import { AlertErrorComponent } from '../../../../../shared/components/alert-erro
 import { LoadingSpinnerComponent } from '../../../../../shared/components/loading-spinner.component/loading-spinner.component';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal.component';
 import { AlertSuccessComponent } from "../../../../../shared/components/alert-success/alert-success.component";
+import { GenerarCuotasModalComponent } from "../../components/generar-cuotas-modal/generar-cuotas-modal.component";
 
 @Component({
   selector: 'app-conceptos-page',
@@ -17,7 +18,8 @@ import { AlertSuccessComponent } from "../../../../../shared/components/alert-su
     AlertErrorComponent,
     LoadingSpinnerComponent,
     ConfirmModalComponent,
-    AlertSuccessComponent
+    AlertSuccessComponent,
+    GenerarCuotasModalComponent
 ],
   templateUrl: './conceptos-page.component.html',
 })

@@ -6,6 +6,9 @@
     </div>
     <div class="flex gap-2">
       <button class="btn btn-ghost" (click)="cargarConceptos(true)">↻ Refrescar</button>
+      <button class="btn btn-outline btn-primary" (click)="modalCuotas.abrir()">
+        📅 Generar Cuotas
+      </button>
       <button class="btn btn-primary" (click)="abrirModal()">+ Nuevo Concepto</button>
     </div>
   </div>
@@ -172,3 +175,6 @@
   (confirmar)="confirmarAsignacion()"
 >
 </app-confirm-modal>
+
+<app-generar-cuotas-modal #modalCuotas (onFinalizado)="cargarConceptos(true)">
+</app-generar-cuotas-modal>
