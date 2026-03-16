@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CustomValidators } from '../../../../core/utils/custom-validators';
 
 @Component({
   selector: 'app-login',
@@ -19,14 +20,24 @@ export class LoginComponent {
   public errorMsg = signal<string | null>(null);
   public cargando = signal<boolean>(false);
 
+  public formEnviado = signal<boolean>(false);
+
   // Armamos el formulario con sus validaciones
   public loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, CustomValidators.emailValido]],
     password: ['', [Validators.required]],
   });
 
+  campoEsInvalido(campo: string): boolean {
+    const control = this.loginForm.get(campo);
+    return !!(control && control.invalid && this.formEnviado());
+  }
+
   ingresar() {
-    if (this.loginForm.invalid) return;
+    this.formEnviado.set(true);
+    if (this.loginForm.invalid) {
+      return;
+    }
 
     this.cargando.set(true);
     this.errorMsg.set(null);
@@ -40,7 +51,7 @@ export class LoginComponent {
           if (user?.debe_cambiar_password) {
             this.router.navigate(['/cambiar-password']);
           } else {
-            this.router.navigate(['/beneficiarios']);
+            this.router.navigate(['/']);
           }
         } else {
           this.errorMsg.set('Credenciales incorrectas. Verificá tu email y contraseña.');

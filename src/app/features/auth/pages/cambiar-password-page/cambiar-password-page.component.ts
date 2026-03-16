@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+// 👇 Importamos los validadores
+import { CustomValidators } from '../../../../core/utils/custom-validators';
 
 @Component({
   selector: 'app-cambiar-password-page',
@@ -18,28 +20,40 @@ export class CambiarPasswordPageComponent {
   public errorMsg = signal<string | null>(null);
   public guardando = signal(false);
 
-  public passForm = this.fb.group({
-    nueva: ['', [Validators.required, Validators.minLength(6)]],
-    confirmacion: ['', [Validators.required]],
-  });
+  // 👇 La banderita para no molestar al usuario mientras escribe
+  public formEnviado = signal<boolean>(false);
+
+  // 👇 El formulario con las nuevas reglas
+  public passForm = this.fb.group(
+    {
+      nueva: ['', [Validators.required, CustomValidators.passwordFuerte]],
+      confirmacion: ['', [Validators.required]],
+    },
+    {
+      // Acá va el validador que compara ambos campos
+      validators: [CustomValidators.passwordsIguales('nueva', 'confirmacion')],
+    },
+  );
+
+  // 👇 La misma función inteligente del Login
+  campoEsInvalido(campo: string): boolean {
+    const control = this.passForm.get(campo);
+    return !!(control && control.invalid && this.formEnviado());
+  }
 
   guardar() {
-    if (this.passForm.invalid) return;
+    this.formEnviado.set(true); // Levanta la bandera al hacer clic
 
-    const { nueva, confirmacion } = this.passForm.value;
+    if (this.passForm.invalid) return; // Si hay errores, no avanza
 
-    if (nueva !== confirmacion) {
-      this.errorMsg.set('Las contraseñas no coinciden.');
-      return;
-    }
+    const { nueva } = this.passForm.value;
 
     this.guardando.set(true);
     this.errorMsg.set(null);
 
     this.authService.cambiarPassword(nueva!).subscribe((exito) => {
       if (exito) {
-        // Si todo salió bien, lo mandamos al sistema principal
-        this.router.navigate(['/beneficiarios']);
+        this.router.navigate(['/']);
       } else {
         this.errorMsg.set('Hubo un error al actualizar la contraseña.');
         this.guardando.set(false);

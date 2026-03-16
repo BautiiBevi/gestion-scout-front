@@ -6,10 +6,12 @@ import {
   Output,
   SimpleChanges,
   inject,
+  signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Familia } from '../../../../models/familia.model';
+import { CustomValidators } from '../../../../core/utils/custom-validators';
 
 @Component({
   selector: 'app-familia-form',
@@ -25,15 +27,29 @@ export class FamiliaFormComponent implements OnChanges {
 
   @Output() onSubmit = new EventEmitter<Familia>();
 
+  public formEnviado = signal<boolean>(false);
+
   public familiaForm = this.fb.group({
-    apellido_familia: ['', [Validators.required, Validators.minLength(3)]],
-    nombre_padre: ['', [Validators.required, Validators.minLength(3)]],
-    nombre_madre: ['', [Validators.required, Validators.minLength(3)]],
-    telefono_padre: ['', [Validators.required, Validators.minLength(3)]],
-    telefono_madre: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
+    apellido_familia: ['', [Validators.required, CustomValidators.formatoFamilia]],
+    nombre_padre: [
+      '',
+      [Validators.required, Validators.minLength(3), CustomValidators.formatoNombrePropio],
+    ],
+    nombre_madre: [
+      '',
+      [Validators.required, Validators.minLength(3), CustomValidators.formatoNombrePropio],
+    ],
+    telefono_padre: ['', [Validators.required, CustomValidators.telefonoValido]],
+    telefono_madre: ['', [Validators.required, CustomValidators.telefonoValido]],
+
+    email: ['', [Validators.required, CustomValidators.emailValido]],
     direccion: ['', [Validators.required, Validators.minLength(3)]],
   });
+
+  campoEsInvalido(campo: string): boolean {
+    const control = this.familiaForm.get(campo);
+    return !!(control && control.invalid && (control.touched || this.formEnviado()));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['familiaInicial'] && this.familiaInicial) {

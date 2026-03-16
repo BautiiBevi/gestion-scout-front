@@ -22,78 +22,130 @@
         } @else {
           <form [formGroup]="usuarioForm" (ngSubmit)="guardar()" class="flex flex-col gap-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label class="form-control w-full">
-                <div class="label"><span class="label-text font-bold">Nombre</span></div>
+              <div class="form-control w-full">
+                <label class="label pb-1"><span class="label-text font-bold">Nombre</span></label>
                 <input
                   type="text"
                   formControlName="nombre"
                   class="input input-bordered w-full focus:input-primary"
+                  [class.input-error]="campoEsInvalido('nombre')"
                 />
-              </label>
+                @if (campoEsInvalido('nombre')) {
+                  <div class="label py-0 flex-col items-start gap-1 mt-1">
+                    @if (usuarioForm.get('nombre')?.hasError('required')) {
+                      <span class="label-text-alt text-error">Requerido.</span>
+                    }
+                    @if (usuarioForm.get('nombre')?.hasError('formatoNombreInvalido')) {
+                      <span class="label-text-alt text-error">Debe empezar con Mayúscula.</span>
+                    }
+                  </div>
+                }
+              </div>
 
-              <label class="form-control w-full">
-                <div class="label"><span class="label-text font-bold">Apellido</span></div>
+              <div class="form-control w-full">
+                <label class="label pb-1"><span class="label-text font-bold">Apellido</span></label>
                 <input
                   type="text"
                   formControlName="apellido"
                   class="input input-bordered w-full focus:input-primary"
+                  [class.input-error]="campoEsInvalido('apellido')"
                 />
-              </label>
+                @if (campoEsInvalido('apellido')) {
+                  <div class="label py-0 flex-col items-start gap-1 mt-1">
+                    @if (usuarioForm.get('apellido')?.hasError('required')) {
+                      <span class="label-text-alt text-error">Requerido.</span>
+                    }
+                    @if (usuarioForm.get('apellido')?.hasError('formatoNombreInvalido')) {
+                      <span class="label-text-alt text-error">Debe empezar con Mayúscula.</span>
+                    }
+                  </div>
+                }
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label class="form-control w-full">
-                <div class="label"><span class="label-text font-bold">DNI</span></div>
+              <div class="form-control w-full">
+                <label class="label pb-1"><span class="label-text font-bold">DNI</span></label>
                 <input
                   type="text"
                   formControlName="dni"
                   class="input input-bordered w-full focus:input-primary"
+                  [class.input-error]="campoEsInvalido('dni')"
                 />
-              </label>
+                @if (campoEsInvalido('dni')) {
+                  <div class="label py-0 flex-col items-start gap-1 mt-1">
+                    @if (usuarioForm.get('dni')?.hasError('required')) {
+                      <span class="label-text-alt text-error">Requerido.</span>
+                    }
+                    @if (usuarioForm.get('dni')?.hasError('dniInvalido')) {
+                      <span class="label-text-alt text-error"
+                        >Formato incorrecto (7 u 8 números).</span
+                      >
+                    }
+                  </div>
+                }
+              </div>
 
-              <label class="form-control w-full">
-                <div class="label"><span class="label-text font-bold">Rama / Rol</span></div>
+              <div class="form-control w-full">
+                <label class="label pb-1"
+                  ><span class="label-text font-bold">Rama / Rol</span></label
+                >
                 <select
                   formControlName="rol"
                   class="select select-bordered w-full focus:select-primary"
+                  [class.select-error]="campoEsInvalido('rol')"
                 >
+                  <option value="" disabled selected>Seleccione un rol...</option>
                   <option value="MANADA">🐺 Manada</option>
                   <option value="UNIDAD">⚜️ Unidad</option>
                   <option value="CAMINANTES">🧭 Caminantes</option>
                   <option value="ROVERS">🔥 Rovers</option>
                   <option value="ADMIN">⚙️ Administrador</option>
                 </select>
-              </label>
+                @if (campoEsInvalido('rol')) {
+                  <div class="label py-0 mt-1">
+                    <span class="label-text-alt text-error">Debe asignar un rol.</span>
+                  </div>
+                }
+              </div>
             </div>
 
-            <label class="form-control w-full">
-              <div class="label"><span class="label-text font-bold">Correo Electrónico</span></div>
+            <div class="form-control w-full">
+              <label class="label pb-1"
+                ><span class="label-text font-bold">Correo Electrónico</span></label
+              >
               <input
                 type="email"
                 formControlName="email"
                 class="input input-bordered w-full focus:input-primary"
+                [class.input-error]="campoEsInvalido('email')"
               />
-              @if (!usuarioId) {
-                <div class="label">
-                  <span class="label-text-alt text-info"
-                    >Se le enviará una contraseña temporal a este correo.</span
-                  >
+              @if (campoEsInvalido('email')) {
+                <div class="label py-0 flex-col items-start gap-1 mt-1">
+                  @if (usuarioForm.get('email')?.hasError('required')) {
+                    <span class="label-text-alt text-error">Requerido.</span>
+                  }
+                  @if (usuarioForm.get('email')?.hasError('emailInvalido')) {
+                    <span class="label-text-alt text-error">Formato de correo incorrecto.</span>
+                  }
                 </div>
               }
-            </label>
 
-            <button
-              type="submit"
-              class="btn btn-primary mt-6 w-full"
-              [disabled]="usuarioForm.invalid || guardando()"
-            >
-              {{
-                guardando()
-                  ? 'Guardando...'
-                  : usuarioId
-                    ? 'Actualizar Datos'
-                    : 'Registrar y Enviar Mail'
-              }}
+              @if (!usuarioId && !campoEsInvalido('email')) {
+                <div class="label py-0 mt-1">
+                  <span class="label-text-alt text-info">
+                    Se le enviará una contraseña temporal a este correo.
+                  </span>
+                </div>
+              }
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-6 w-full" [disabled]="guardando()">
+              @if (guardando()) {
+                <span class="loading loading-spinner loading-md"></span> Guardando...
+              } @else {
+                {{ usuarioId ? 'Actualizar Datos' : 'Registrar y Enviar Mail' }}
+              }
             </button>
           </form>
         }
