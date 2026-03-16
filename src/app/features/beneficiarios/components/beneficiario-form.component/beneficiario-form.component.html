@@ -18,39 +18,63 @@
     class="grid grid-cols-1 md:grid-cols-2 gap-4"
   >
     <label class="form-control w-full">
-      <div class="label"><span class="label-text font-medium">Nombre</span></div>
+      <div class="label pb-1"><span class="label-text font-medium">Nombre</span></div>
       <input
         type="text"
         formControlName="nombre"
         class="input input-bordered w-full"
-        [class.input-error]="
-          beneficiarioForm.get('nombre')?.invalid && beneficiarioForm.get('nombre')?.touched
-        "
+        [class.input-error]="campoEsInvalido('nombre')"
       />
+      @if (campoEsInvalido('nombre')) {
+        <div class="label pb-0">
+          @if (beneficiarioForm.get('nombre')?.hasError('required')) {
+            <span class="label-text-alt text-error">Requerido.</span>
+          }
+          @if (beneficiarioForm.get('nombre')?.hasError('numerosNoPermitidos')) {
+            <span class="label-text-alt text-error">Solo se permiten letras.</span>
+          }
+        </div>
+      }
     </label>
 
     <label class="form-control w-full">
-      <div class="label"><span class="label-text font-medium">Apellido</span></div>
+      <div class="label pb-1"><span class="label-text font-medium">Apellido</span></div>
       <input
         type="text"
         formControlName="apellido"
         class="input input-bordered w-full"
-        [class.input-error]="
-          beneficiarioForm.get('apellido')?.invalid && beneficiarioForm.get('apellido')?.touched
-        "
+        [class.input-error]="campoEsInvalido('apellido')"
       />
+      @if (campoEsInvalido('apellido')) {
+        <div class="label pb-0">
+          @if (beneficiarioForm.get('apellido')?.hasError('required')) {
+            <span class="label-text-alt text-error">Requerido.</span>
+          }
+          @if (beneficiarioForm.get('apellido')?.hasError('numerosNoPermitidos')) {
+            <span class="label-text-alt text-error">Solo se permiten letras.</span>
+          }
+        </div>
+      }
     </label>
 
     <label class="form-control w-full">
-      <div class="label"><span class="label-text font-medium">DNI</span></div>
+      <div class="label pb-1"><span class="label-text font-medium">DNI</span></div>
       <input
         type="text"
         formControlName="dni"
         class="input input-bordered w-full"
-        [class.input-error]="
-          beneficiarioForm.get('dni')?.invalid && beneficiarioForm.get('dni')?.touched
-        "
+        [class.input-error]="campoEsInvalido('dni')"
       />
+      @if (campoEsInvalido('dni')) {
+        <div class="label pb-0">
+          @if (beneficiarioForm.get('dni')?.hasError('required')) {
+            <span class="label-text-alt text-error">Requerido.</span>
+          }
+          @if (beneficiarioForm.get('dni')?.hasError('dniInvalido')) {
+            <span class="label-text-alt text-error">Debe tener 7 u 8 números.</span>
+          }
+        </div>
+      }
     </label>
 
     <label class="form-control w-full">

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UsuarioService } from '../../../../core/services/usuario.service';
+import { CustomValidators } from '../../../../core/utils/custom-validators';
 
 @Component({
   selector: 'app-add-edit-user-page',
@@ -20,12 +21,13 @@ export class AddEditUserPageComponent implements OnInit {
   public cargando = signal(false);
   public guardando = signal(false);
   public errorMsg = signal<string | null>(null);
+  public formEnviado = signal<boolean>(false);
 
   public usuarioForm = this.fb.group({
-    nombre: ['', Validators.required],
-    apellido: ['', Validators.required],
-    dni: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    nombre: ['', [Validators.required, CustomValidators.formatoNombrePropio]],
+    apellido: ['', [Validators.required, CustomValidators.formatoNombrePropio]],
+    dni: ['', [Validators.required, CustomValidators.dniValido]],
+    email: ['', [Validators.required, CustomValidators.emailValido]],
     rol: ['', Validators.required],
   });
 
@@ -38,6 +40,11 @@ export class AddEditUserPageComponent implements OnInit {
         this.cargarDirigente(this.usuarioId);
       }
     });
+  }
+
+  campoEsInvalido(campo: string): boolean {
+    const control = this.usuarioForm.get(campo);
+    return !!(control && control.invalid && (control.touched || this.formEnviado()));
   }
 
   cargarDirigente(id: number) {
@@ -62,6 +69,7 @@ export class AddEditUserPageComponent implements OnInit {
   }
 
   guardar() {
+    this.formEnviado.set(true);
     if (this.usuarioForm.invalid) return;
 
     this.guardando.set(true);

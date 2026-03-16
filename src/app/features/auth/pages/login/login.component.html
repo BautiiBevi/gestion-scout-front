@@ -27,8 +27,21 @@
             type="email"
             formControlName="email"
             class="input input-bordered input-lg w-full focus:input-primary transition-colors text-lg"
+            [class.input-error]="campoEsInvalido('email')"
             placeholder="admin@admin.com"
           />
+          @if (campoEsInvalido('email')) {
+            <div class="label pb-0">
+              @if (loginForm.get('email')?.hasError('required')) {
+                <span class="label-text-alt text-error font-medium">El correo es obligatorio.</span>
+              }
+              @if (loginForm.get('email')?.hasError('emailInvalido')) {
+                <span class="label-text-alt text-error font-medium"
+                  >Formato de correo incorrecto.</span
+                >
+              }
+            </div>
+          }
         </label>
 
         <label class="form-control w-full">
@@ -39,14 +52,23 @@
             type="password"
             formControlName="password"
             class="input input-bordered input-lg w-full focus:input-primary transition-colors text-lg"
-            placeholder="••••••••"
+            [class.input-error]="campoEsInvalido('password')"
           />
+          @if (campoEsInvalido('password')) {
+            <div class="label pb-0">
+              @if (loginForm.get('password')?.hasError('required')) {
+                <span class="label-text-alt text-error font-medium"
+                  >La contraseña es obligatoria.</span
+                >
+              }
+            </div>
+          }
         </label>
 
         <button
           type="submit"
           class="btn btn-primary btn-lg mt-6 w-full text-xl"
-          [disabled]="loginForm.invalid || cargando()"
+          [disabled]="cargando()"
         >
           @if (cargando()) {
             <span class="loading loading-spinner loading-md"></span>
