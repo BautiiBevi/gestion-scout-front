@@ -103,13 +103,12 @@ export class LegajoPageComponent implements OnInit {
   }
 
   getDocUrl(nombreArchivo: string): string {
-    // 1. Si ya es un link de internet (Cloudinary), lo devolvemos tal cual
     if (nombreArchivo.startsWith('http')) {
+      if (nombreArchivo.toLowerCase().includes('.pdf')) {
+        return `https://docs.google.com/viewer?url=${encodeURIComponent(nombreArchivo)}&embedded=true`;
+      }
       return nombreArchivo;
     }
-
-    // 2. Si es un nombre viejo, le pegamos la URL del backend
-    // (Reemplazá 'this.urlBackend' por tu variable de entorno de la API)
     return `${this.urlBackend}/uploads/${nombreArchivo}`;
   }
 }
