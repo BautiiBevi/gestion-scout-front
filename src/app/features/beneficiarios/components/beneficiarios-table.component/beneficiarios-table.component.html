@@ -1,3 +1,9 @@
+<div class="flex justify-end gap-2 p-4 border-b border-base-200">
+  <button class="btn btn-sm btn-success text-white" (click)="descargarExcel()">
+    📊 Exportar Excel
+  </button>
+  <button class="btn btn-sm btn-error text-white" (click)="descargarPDF()">📄 Exportar PDF</button>
+</div>
 <div class="card bg-base-100 shadow-xl overflow-x-auto">
   <table class="table table-zebra w-full">
     <thead class="bg-base-300 text-base-content text-sm">
@@ -86,7 +92,7 @@
       } @empty {
         <tr>
           <td
-            [attr.colspan]="isAdmin() ? 4 : 3"
+            [attr.colspan]="isAdmin() ? 5 : 4"
             class="text-center py-8 text-base-content/50 italic"
           >
             No hay beneficiarios registrados en el sistema.
