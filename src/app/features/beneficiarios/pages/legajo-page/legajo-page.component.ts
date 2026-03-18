@@ -101,4 +101,15 @@ export class LegajoPageComponent implements OnInit {
     if (tipo.includes('image')) return '🖼️';
     return '📁';
   }
+
+  getDocUrl(nombreArchivo: string): string {
+    // 1. Si ya es un link de internet (Cloudinary), lo devolvemos tal cual
+    if (nombreArchivo.startsWith('http')) {
+      return nombreArchivo;
+    }
+
+    // 2. Si es un nombre viejo, le pegamos la URL del backend
+    // (Reemplazá 'this.urlBackend' por tu variable de entorno de la API)
+    return `${this.urlBackend}/uploads/${nombreArchivo}`;
+  }
 }
