@@ -1,0 +1,180 @@
+<div class="p-6 md:p-10 bg-base-200 min-h-screen">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-black text-base-content">Calendario Scout</h1>
+      <p class="opacity-70">Actividades, campamentos y reuniones</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirModalNuevo()">+ Nuevo Evento</button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+    <div class="lg:col-span-3 card bg-base-100 shadow-xl p-4 md:p-6 overflow-x-auto">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="card bg-base-100 shadow-xl sticky top-6">
+        <div class="card-body p-6">
+          <h2 class="card-title text-lg mb-4 flex items-center gap-2">
+            <span>⛺</span> Próximos Eventos
+          </h2>
+
+          <div class="flex flex-col gap-4">
+            @for (evento of proximosEventos(); track evento.id_evento) {
+              <div
+                class="flex gap-4 items-start group hover:bg-base-200 p-2 -mx-2 rounded-lg transition-colors cursor-pointer"
+                (click)="verDetalleEvento(evento.id_evento.toString())"
+              >
+                <div
+                  class="flex flex-col items-center justify-center bg-base-200 group-hover:bg-base-300 rounded-lg min-w-[3rem] h-12"
+                >
+                  <span class="text-xs uppercase font-bold text-base-content/60 leading-none">
+                    {{ evento.fecha_inicio | date: 'MMM' }}
+                  </span>
+                  <span class="text-lg font-black leading-none mt-1">
+                    {{ evento.fecha_inicio | date: 'dd' }}
+                  </span>
+                </div>
+
+                <div class="flex flex-col flex-1 overflow-hidden">
+                  <span class="font-bold truncate text-sm" [style.color]="evento.color">
+                    {{ evento.titulo }}
+                  </span>
+                  <span class="text-xs opacity-60">
+                    {{ evento.alcance }}
+                  </span>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-center py-8 opacity-50">
+                <p class="text-3xl mb-2">🍃</p>
+                <p class="text-sm font-medium">No hay eventos próximos.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<dialog id="modal_nuevo_evento" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-xl mb-4">Agendar Nueva Actividad</h3>
+
+    <form [formGroup]="eventoForm" (ngSubmit)="guardar()" class="flex flex-col gap-4">
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text font-bold">Título</span></div>
+        <input
+          type="text"
+          formControlName="titulo"
+          class="input input-bordered"
+          placeholder="Ej: Campamento de Invierno"
+        />
+      </label>
+
+      <div class="grid grid-cols-2 gap-4">
+        <label class="form-control w-full">
+          <div class="label"><span class="label-text font-bold">Fecha Inicio</span></div>
+          <input type="date" formControlName="fecha_inicio" class="input input-bordered" />
+        </label>
+
+        <label class="form-control w-full">
+          <div class="label"><span class="label-text font-bold">Fecha Fin (Opcional)</span></div>
+          <input type="date" formControlName="fecha_fin" class="input input-bordered" />
+        </label>
+      </div>
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text font-bold">Rama / Alcance</span></div>
+        <select
+          formControlName="alcance"
+          class="select select-bordered"
+          (change)="cambiarRama($event)"
+        >
+          <option value="GRUPO">Todo el Grupo (Azul)</option>
+          <option value="MANADA">Manada (Amarillo)</option>
+          <option value="UNIDAD">Unidad (Verde)</option>
+          <option value="CAMINANTES">Caminantes (Celeste)</option>
+          <option value="ROVERS">Rovers (Rojo)</option>
+        </select>
+      </label>
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text font-bold">Descripción (Opcional)</span></div>
+        <textarea
+          formControlName="descripcion"
+          class="textarea textarea-bordered h-24"
+          placeholder="Lugar, costo, horario..."
+        ></textarea>
+      </label>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="cerrarModal()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="eventoForm.invalid || guardando()"
+        >
+          {{ guardando() ? 'Guardando...' : 'Agendar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button (click)="cerrarModal()">close</button></form>
+</dialog>
+
+<dialog id="modal_detalle_evento" class="modal">
+  <div class="modal-box border-t-4" [style.border-color]="eventoSeleccionado()?.color">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <div class="badge badge-outline mb-2" [style.color]="eventoSeleccionado()?.color">
+          {{ eventoSeleccionado()?.alcance }}
+        </div>
+        <h3 class="font-bold text-2xl">{{ eventoSeleccionado()?.titulo }}</h3>
+      </div>
+      <button class="btn btn-sm btn-circle btn-ghost" (click)="cerrarDetalle()">✕</button>
+    </div>
+
+    <div class="py-4 space-y-4">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">📅</span>
+        <div>
+          <p class="font-bold text-sm">Fecha</p>
+          <p class="opacity-70">
+            {{ eventoSeleccionado()?.fecha_inicio | date: 'dd/MM/yyyy' }}
+            @if (eventoSeleccionado()?.fecha_fin) {
+              al {{ eventoSeleccionado()?.fecha_fin | date: 'dd/MM/yyyy' }}
+            }
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-base-200 p-4 rounded-xl">
+        <p class="font-bold text-sm mb-1 flex items-center gap-2"><span>📝</span> Descripción</p>
+        <p class="text-sm whitespace-pre-wrap">
+          {{ eventoSeleccionado()?.descripcion || 'Sin descripción adicional.' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-action flex justify-between">
+      <button class="btn btn-error btn-outline" (click)="prepararBorrado()">🗑️ Eliminar</button>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost" (click)="cerrarDetalle()">Cerrar</button>
+        <button class="btn btn-primary" (click)="prepararEdicion()">✏️ Editar</button>
+      </div>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="cerrarDetalle()">close</button>
+  </form>
+</dialog>
+
+<app-confirm-modal
+  modalId="modal_borrar_evento"
+  titulo="¿Eliminar actividad?"
+  [mensaje]="'¿Estás seguro de que querés borrar este evento? Esta acción no se puede deshacer.'"
+  textoBoton="Sí, eliminar"
+  (confirmar)="confirmarBorrado()"
+></app-confirm-modal>
