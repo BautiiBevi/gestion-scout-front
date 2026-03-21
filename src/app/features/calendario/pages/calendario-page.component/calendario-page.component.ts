@@ -8,6 +8,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { EventoService } from '../../../../core/services/evento.service';
 import { Evento } from '../../../../models/evento.model';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import timeGridPlugin from '@fullcalendar/timegrid';
 
 @Component({
   selector: 'app-calendario-page',
@@ -25,11 +26,14 @@ export class CalendarioPageComponent implements OnInit {
   public eventoSeleccionado = signal<Evento | null>(null);
 
   public proximosEventos = computed(() => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    const hoyStr = new Date().toISOString().split('T')[0]; // "2026-03-20"
+
     return this.eventos()
-      .filter((e) => new Date(e.fecha_inicio) >= hoy)
-      .sort((a, b) => new Date(a.fecha_inicio).getTime() - new Date(b.fecha_inicio).getTime())
+      .filter((e) => {
+        const fechaInicioLimpia = e.fecha_inicio.split('T')[0];
+        return fechaInicioLimpia >= hoyStr;
+      })
+      .sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio))
       .slice(0, 5);
   });
 
@@ -37,29 +41,43 @@ export class CalendarioPageComponent implements OnInit {
     titulo: ['', Validators.required],
     descripcion: [''],
     fecha_inicio: ['', Validators.required],
+    hora_inicio: ['00:00'],
     fecha_fin: [''],
+    hora_fin: ['00:00'],
+    todo_el_dia: [true],
     alcance: ['GRUPO', Validators.required],
     color: ['#3b82f6', Validators.required],
   });
 
   public calendarOptions: CalendarOptions = {
-    plugins: [dayGridPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
     locale: 'es',
     editable: true,
     selectable: true,
+    eventDurationEditable: true, // <--- FUERZA a que se pueda estirar siempre
+    eventResizableFromStart: true, // <--- PERMITE estirar desde el lado izquierdo
+    eventStartEditable: true, // <--- PERMITE mover el inicio
+
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay',
     },
-    // Eventos de interacción
+
+    buttonText: {
+      today: 'Hoy',
+      month: 'Mes',
+      week: 'Semana',
+      day: 'Día',
+    },
+
+    allDaySlot: true,
+
     dateClick: (arg) => this.abrirModalNuevo(arg.dateStr),
     eventClick: (arg) => this.verDetalleEvento(arg.event.id),
-
-    // ESTOS DOS SON LOS NUEVOS:
-    eventDrop: (info) => this.actualizarFechaEvento(info), // Al moverlo de día
-    eventResize: (info) => this.actualizarFechaEvento(info), // Al estirarlo
+    eventDrop: (info) => this.actualizarFechaEvento(info),
+    eventResize: (info) => this.actualizarFechaEvento(info),
 
     events: [],
   };
@@ -71,35 +89,44 @@ export class CalendarioPageComponent implements OnInit {
   cargarEventos() {
     this.eventoService.getEventos().subscribe((data) => {
       this.eventos.set(data);
+
       const eventosFC: EventInput[] = data.map((e) => {
-        const fechaInicioLimpia = e.fecha_inicio.slice(0, 10);
-        const dInicio = new Date(fechaInicioLimpia + 'T12:00:00');
-        const format = (d: Date) => {
-          const m = (d.getMonth() + 1).toString().padStart(2, '0');
-          const dia = d.getDate().toString().padStart(2, '0');
-          return `${d.getFullYear()}-${m}-${dia}`;
-        };
-        const inicioSimple = format(dInicio);
-        let finAjustado = undefined;
-        if (e.fecha_fin) {
-          const fechaFinLimpia = e.fecha_fin.slice(0, 10);
-          const dFin = new Date(fechaFinLimpia + 'T12:00:00');
-          dFin.setDate(dFin.getDate() + 1);
-          finAjustado = format(dFin);
-        }
+        const inicioTieneHora = e.fecha_inicio.includes('T');
+        const finTieneHora = e.fecha_fin?.includes('T');
+
         return {
           id: e.id_evento.toString(),
           title: e.titulo,
-          start: inicioSimple,
-          end: finAjustado,
+          start: e.fecha_inicio,
+          // Si el FIN tiene hora, lo mandamos directo. Si no tiene, es todo el día y ajustamos.
+          end: e.fecha_fin
+            ? finTieneHora
+              ? e.fecha_fin
+              : this.ajustarFechaFin(e.fecha_fin)
+            : undefined,
+
+          allDay: !inicioTieneHora,
           backgroundColor: e.color,
           borderColor: e.color,
-          allDay: true,
           display: 'block',
         };
       });
+
       this.calendarOptions = { ...this.calendarOptions, events: eventosFC };
     });
+  }
+
+  private ajustarFechaFin(fechaStr: string): string {
+    // Creamos la fecha al mediodía para evitar problemas de zona horaria
+    const fecha = new Date(fechaStr + 'T12:00:00');
+    // Le sumamos el día extra que pide FullCalendar para mostrar el bloque completo
+    fecha.setDate(fecha.getDate() + 1);
+
+    const anio = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dia = fecha.getDate().toString().padStart(2, '0');
+
+    return `${anio}-${mes}-${dia}`;
   }
 
   actualizarFechaEvento(info: any) {
@@ -108,47 +135,62 @@ export class CalendarioPageComponent implements OnInit {
 
     if (!eventoOriginal) return;
 
-    const format = (d: Date | null) => {
-      if (!d) return undefined;
+    // Función de formateo mejorada
+    const formatParaDB = (date: Date | null, esTodoElDia: boolean, esFechaFin: boolean = false) => {
+      if (!date) return undefined;
+
+      const d = new Date(date.getTime());
+
+      // SIEMPRE que sea la fecha de FIN de un evento de todo el día,
+      // restamos 1 día porque FullCalendar lo entrega "exclusivo" (un día después).
+      if (esTodoElDia && esFechaFin) {
+        d.setDate(d.getDate() - 1);
+      }
+
       const anio = d.getFullYear();
       const mes = (d.getMonth() + 1).toString().padStart(2, '0');
       const dia = d.getDate().toString().padStart(2, '0');
-      return `${anio}-${mes}-${dia}`;
-    };
+      const fechaBase = `${anio}-${mes}-${dia}`;
 
-    let fechaFin = info.event.end;
-    if (fechaFin) {
-      const d = new Date(fechaFin);
-      d.setDate(d.getDate() - 1);
-      fechaFin = d;
-    }
+      if (esTodoElDia) {
+        return fechaBase;
+      } else {
+        const horas = d.getHours().toString().padStart(2, '0');
+        const mins = d.getMinutes().toString().padStart(2, '0');
+        return `${fechaBase}T${horas}:${mins}`;
+      }
+    };
 
     const datosActualizados: Partial<Evento> = {
       ...eventoOriginal,
-      fecha_inicio: format(info.event.start)!,
-      fecha_fin: fechaFin ? format(fechaFin) : undefined,
+      // Para el inicio NO restamos nada
+      fecha_inicio: formatParaDB(info.event.start, info.event.allDay, false)!,
+      // Para el fin SI restamos si es todo el día
+      fecha_fin: info.event.end ? formatParaDB(info.event.end, info.event.allDay, true) : undefined,
     };
 
     this.eventoService.updateEvento(eventoId, datosActualizados).subscribe({
       next: () => {
         this.cargarEventos();
-        console.log('Evento movido con éxito');
+        console.log('Evento actualizado correctamente');
       },
       error: () => {
-        alert('Error al mover el evento');
+        alert('Error al actualizar');
         info.revert();
       },
     });
   }
 
-  // --- MANTENIMIENTO DE MODALES ---
-
   abrirModalNuevo(fechaSeleccionada?: string) {
-    this.eventoSeleccionado.set(null); // Importante: si abrimos uno nuevo, limpiamos la selección
+    this.eventoSeleccionado.set(null);
     this.eventoForm.reset({
       alcance: 'GRUPO',
       color: '#3b82f6',
+      todo_el_dia: true,
       fecha_inicio: fechaSeleccionada || '',
+      fecha_fin: fechaSeleccionada || '',
+      hora_inicio: '15:00',
+      hora_fin: '18:00',
     });
     (document.getElementById('modal_nuevo_evento') as HTMLDialogElement)?.showModal();
   }
@@ -174,11 +216,35 @@ export class CalendarioPageComponent implements OnInit {
     const ev = this.eventoSeleccionado();
     if (!ev) return;
 
+    const tieneHora = ev.fecha_inicio.includes('T');
+
+    // Separamos y limpiamos las horas (HH:mm)
+    const [fInicio, hInicioFull] = tieneHora
+      ? ev.fecha_inicio.split('T')
+      : [ev.fecha_inicio, '15:00'];
+    const hInicio = hInicioFull?.slice(0, 5); // Cortamos a 5 caracteres
+
+    let fFin = '';
+    let hFin = '18:30';
+
+    if (ev.fecha_fin) {
+      if (ev.fecha_fin.includes('T')) {
+        const parts = ev.fecha_fin.split('T');
+        fFin = parts[0];
+        hFin = parts[1].slice(0, 5); // Cortamos a 5 caracteres
+      } else {
+        fFin = ev.fecha_fin;
+      }
+    }
+
     this.eventoForm.patchValue({
       titulo: ev.titulo,
       descripcion: ev.descripcion,
-      fecha_inicio: ev.fecha_inicio.slice(0, 10),
-      fecha_fin: ev.fecha_fin ? ev.fecha_fin.slice(0, 10) : '',
+      todo_el_dia: !tieneHora,
+      fecha_inicio: fInicio,
+      hora_inicio: hInicio,
+      fecha_fin: fFin,
+      hora_fin: hFin,
       alcance: ev.alcance,
       color: ev.color,
     });
@@ -191,14 +257,31 @@ export class CalendarioPageComponent implements OnInit {
     if (this.eventoForm.invalid) return;
     this.guardando.set(true);
 
-    const formValue = this.eventoForm.value;
+    const f = this.eventoForm.getRawValue();
+
+    // 1. Construimos fecha_inicio
+    let inicio = f.fecha_inicio!;
+    if (!f.todo_el_dia && f.hora_inicio) {
+      inicio = `${f.fecha_inicio}T${f.hora_inicio}`;
+    }
+
+    // 2. Construimos fecha_fin (Súper robusto)
+    let fin = undefined;
+    if (f.todo_el_dia) {
+      fin = f.fecha_fin || undefined;
+    } else {
+      // Si no puso fecha de fin, usamos la de inicio para que no sea null
+      const fechaBaseFin = f.fecha_fin || f.fecha_inicio;
+      fin = `${fechaBaseFin}T${f.hora_fin}`;
+    }
+
     const datosEvento: Partial<Evento> = {
-      titulo: formValue.titulo!,
-      descripcion: formValue.descripcion || undefined,
-      fecha_inicio: formValue.fecha_inicio!,
-      fecha_fin: formValue.fecha_fin || undefined,
-      alcance: formValue.alcance!,
-      color: formValue.color!,
+      titulo: f.titulo!,
+      descripcion: f.descripcion || undefined,
+      fecha_inicio: inicio,
+      fecha_fin: fin,
+      alcance: f.alcance!,
+      color: f.color!,
     };
 
     const idEdicion = this.eventoSeleccionado()?.id_evento;
