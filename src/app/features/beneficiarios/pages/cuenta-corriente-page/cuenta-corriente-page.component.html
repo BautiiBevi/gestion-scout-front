@@ -89,11 +89,12 @@
                   <th>Concepto</th>
                   <th>Vencimiento</th>
                   <th>Montos (Efvo / MP)</th>
+                  <th class="w-16 text-center">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 @for (c of cargos(); track c.id_cargo) {
-                  @if (c.estado === 'PENDIENTE') {
+                  @if (c.estado === 'PENDIENTE' || c.estado === 'PARCIAL') {
                     <tr class="hover group">
                       <td class="text-center">
                         <input
@@ -101,32 +102,81 @@
                           class="checkbox checkbox-primary"
                           [checked]="seleccionados().has(c.id_cargo)"
                           (change)="toggleSeleccion(c.id_cargo)"
+                          [disabled]="c.vencido"
                         />
                       </td>
                       <td>
                         <div class="flex flex-col">
-                          <span class="font-bold">{{ c.concepto_nombre }}</span>
-                          <button
-                            class="text-xs text-primary font-bold text-left opacity-0 group-hover:opacity-100 transition-opacity"
-                            (click)="prepararCobro(c)"
-                          >
-                            Solo este pago
-                          </button>
+                          <span class="font-bold flex items-center gap-2">
+                            {{ c.concepto_nombre }}
+                            @if (c.estado === 'PARCIAL') {
+                              <div class="badge badge-warning badge-sm">Parcial</div>
+                            }
+                            @if (c.vencido) {
+                              <div class="badge badge-error badge-sm animate-pulse">Vencido</div>
+                            }
+                          </span>
+
+                          @if (!c.vencido) {
+                            <div class="mt-1">
+                              <button
+                                class="text-xs text-primary font-bold text-left opacity-0 group-hover:opacity-100 transition-opacity"
+                                (click)="prepararCobro(c)"
+                              >
+                                Cobrar (Total o Parcial)
+                              </button>
+                            </div>
+                          } @else {
+                            <span
+                              class="text-[10px] text-error font-bold leading-tight mt-1 opacity-80"
+                            >
+                              Actualizar precio en Tesorería
+                            </span>
+                          }
                         </div>
                       </td>
                       <td>{{ c.fecha_vencimiento | date: 'dd/MM/yyyy' }}</td>
 
                       <td class="whitespace-nowrap">
-                        <div class="text-success font-bold text-lg">${{ c.monto_efectivo }}</div>
-                        <div class="text-info font-bold text-sm opacity-80">
-                          ${{ c.monto_transferencia }}
+                        <div class="flex items-baseline gap-2">
+                          <span class="text-success font-black text-lg">
+                            ${{ c.deuda_efectivo_restante }}
+                          </span>
+                          @if ((c.total_pagado || 0) > 0) {
+                            <span class="text-xs opacity-60 line-through"
+                              >${{ c.monto_efectivo }}</span
+                            >
+                          }
                         </div>
+
+                        <div class="flex items-baseline gap-2 text-info opacity-80 mt-1">
+                          <span class="font-bold text-sm">
+                            MP: ${{ c.deuda_transferencia_restante }}
+                          </span>
+                          @if ((c.total_pagado || 0) > 0) {
+                            <span class="text-[10px] line-through"
+                              >${{ c.monto_transferencia }}</span
+                            >
+                          }
+                        </div>
+                      </td>
+
+                      <td class="text-center">
+                        @if (c.estado === 'PENDIENTE') {
+                          <button
+                            class="btn btn-square btn-outline btn-error btn-sm opacity-40 group-hover:opacity-100 transition-all shadow-sm"
+                            (click)="prepararBorradoCargo(c)"
+                            title="Desasociar deuda"
+                          >
+                            <span class="text-lg">🗑️</span>
+                          </button>
+                        }
                       </td>
                     </tr>
                   }
                 } @empty {
                   <tr>
-                    <td colspan="4" class="text-center py-12 opacity-50 text-xl italic font-medium">
+                    <td colspan="5" class="text-center py-12 opacity-50 text-xl italic font-medium">
                       ¡No tiene deudas! El chico está al día. 🏕️
                     </td>
                   </tr>
@@ -176,24 +226,37 @@
                 </tr>
               </thead>
               <tbody>
-                @for (c of cargos(); track c.id_cargo) {
-                  @if (c.estado === 'PAGADO') {
-                    <tr class="hover opacity-80">
-                      <td>{{ c.fecha_pago | date: 'dd/MM/yyyy' }}</td>
-                      <td class="font-medium">{{ c.concepto_nombre }}</td>
+                @for (pago of historialPagosGlobal(); track pago.id_pago) {
+                  <tr class="hover opacity-80">
+                    <td>{{ pago.fecha_pago | date: 'dd/MM/yyyy' }}</td>
 
-                      <td class="text-center">
-                        <div class="badge badge-outline badge-sm font-semibold">
-                          {{ c.metodo_pago || 'EFECTIVO' }}
-                        </div>
-                      </td>
+                    <td class="font-medium">
+                      {{ pago.concepto_nombre }}
+                      @if (pago.cargo_estado === 'PARCIAL' || pago.historial_length > 1) {
+                        <span class="text-[10px] bg-warning/20 text-warning px-1 rounded ml-1"
+                          >Parte</span
+                        >
+                      }
+                    </td>
 
-                      <td class="font-bold text-success">${{ c.monto_pagado }}</td>
-                      <td class="text-xs italic">
-                        {{ c.cobrador_nombre }} {{ c.cobrador_apellido }}
-                      </td>
-                    </tr>
-                  }
+                    <td class="text-center">
+                      <div class="badge badge-outline badge-sm font-semibold">
+                        {{ pago.metodo_pago || 'EFECTIVO' }}
+                      </div>
+                    </td>
+
+                    <td class="font-bold text-success">${{ pago.monto_pagado }}</td>
+
+                    <td class="text-xs italic">
+                      {{ pago.cobrador_nombre }} {{ pago.cobrador_apellido }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-12 opacity-50 text-xl italic font-medium">
+                      No hay registros de pagos en el historial.
+                    </td>
+                  </tr>
                 }
               </tbody>
             </table>
@@ -210,3 +273,16 @@
   (onConfirmar)="ejecutarPago($event)"
   (onCerrar)="cerrarModalCobro()"
 ></app-confirmar-pago-modal>
+
+<app-confirm-modal
+  modalId="modal_borrar_cargo"
+  titulo="¿Quitar deuda asignada?"
+  [mensaje]="
+    'Estás por eliminar la deuda <strong>' +
+    (cargoABorrar()?.concepto_nombre || '') +
+    '</strong> de la cuenta de este beneficiario.<br><br>¿Estás seguro?'
+  "
+  textoBoton="Sí, quitar deuda"
+  (confirmar)="confirmarBorradoCargo()"
+>
+</app-confirm-modal>
