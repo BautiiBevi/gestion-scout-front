@@ -38,12 +38,13 @@ export class ConceptosPageComponent implements OnInit {
     const hoyStr = new Date().toISOString().split('T')[0];
 
     return this.conceptos().map((con: any) => {
-      if (!con.fecha_vencimiento) return { ...con, vencido: false };
+      if (!con.fecha_vencimiento) return { ...con, vencido: false, actualizada: con.actualizada };
 
       const venStr = con.fecha_vencimiento.split('T')[0];
       return {
         ...con,
-        vencido: venStr < hoyStr, 
+        vencido: venStr < hoyStr,
+        actualizada: con.actualizada,
       };
     });
   });
@@ -59,7 +60,7 @@ export class ConceptosPageComponent implements OnInit {
   public actualizarForm = this.fb.group({
     monto_efectivo: ['', [Validators.required, Validators.min(0)]],
     monto_transferencia: ['', [Validators.required, Validators.min(0)]],
-    fecha_vencimiento: ['', Validators.required], 
+    fecha_vencimiento: ['', Validators.required],
   });
 
   ngOnInit() {

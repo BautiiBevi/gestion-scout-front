@@ -47,17 +47,27 @@
         </thead>
         <tbody>
           @for (c of conceptosConAlerta(); track c.id_concepto) {
-            <tr class="hover" [ngClass]="{ 'bg-error/10': c.vencido }">
+            <tr
+              class="hover"
+              [ngClass]="{ 'bg-error/10': c.vencido, 'bg-warning/10': c.actualizada && !c.vencido }"
+            >
               <td class="font-bold">
                 {{ c.nombre }}
+
                 @if (c.vencido) {
                   <span class="badge badge-error badge-sm ml-2 animate-pulse font-bold"
                     >VENCIDO</span
                   >
+                } @else if (c.actualizada) {
+                  <span class="badge badge-warning badge-sm ml-2 font-bold text-warning-content"
+                    >ACTUALIZADA</span
+                  >
                 }
               </td>
+
               <td class="text-success font-medium">${{ c.monto_efectivo }}</td>
               <td class="text-info font-medium">${{ c.monto_transferencia }}</td>
+
               <td>
                 <div
                   class="badge badge-outline font-bold"
@@ -70,9 +80,16 @@
                   {{ c.alcance }}
                 </div>
               </td>
-              <td [ngClass]="{ 'text-error font-bold': c.vencido }">
+
+              <td
+                [ngClass]="{
+                  'text-error font-bold': c.vencido,
+                  'text-warning-content font-bold': c.actualizada && !c.vencido,
+                }"
+              >
                 {{ c.fecha_vencimiento ? (c.fecha_vencimiento | date: 'dd/MM/yyyy') : 'Sin vto.' }}
               </td>
+
               <td class="text-center">
                 <div class="flex justify-center gap-2">
                   @if (c.vencido) {
@@ -92,6 +109,7 @@
                       💵 Asignar
                     </button>
                   }
+
                   <button
                     class="btn btn-sm btn-ghost text-error opacity-70 hover:opacity-100"
                     (click)="prepararBorrado(c)"
